@@ -50,7 +50,7 @@ export default function Home() {
     <div>
    
       {/* top */}
-      <div className='flex flex-col gap-6 p-28 px-3 max-w-6xl mx-auto -mt-16'>
+      {/* <div className='flex flex-col gap-6 p-28 px-3 max-w-6xl mx-auto -mt-16'>
         <h1 className='text-slate-700 font-bold text-3xl lg:text-6xl'>
           Find your next <span className='text-slate-500'>perfect</span>
           <br />
@@ -67,7 +67,40 @@ export default function Home() {
         >
           Let's get started...
         </Link>
-      </div>
+      </div> */}
+
+<div
+  className="relative h-[90vh] bg-cover bg-center flex items-center justify-center"
+  style={{
+    backgroundImage: "url('/land-bg.png')", // put your image here
+  }}
+>
+  <div className="absolute inset-0 bg-black opacity-40"></div> {/* dark overlay */}
+
+  <div className="relative z-10 text-center text-white px-4">
+    <h1 className="text-4xl sm:text-5xl font-bold mb-6">
+      Secure and Transparent <br /> Land Exchange System
+    </h1>
+
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <Link
+        to="/seller-login"
+        className="bg-green-800 text-white px-6 py-3 rounded hover:bg-green-900 font-semibold"
+      >
+        Seller Portal
+      </Link>
+      <Link
+        to="/search"
+        className="bg-white text-green-900 px-6 py-3 rounded hover:bg-gray-200 font-semibold"
+      >
+        Explore Lands
+      </Link>
+    </div>
+  </div>
+</div>
+
+
+
 <div>
   
 </div>
