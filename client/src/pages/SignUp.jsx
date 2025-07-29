@@ -27,12 +27,15 @@ export default function SignUp() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      // const data = await res.json();
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : {};
+
       console.log(data);
 
       if (data.success === false) {
         setLoading(false);
-        setError(data.message);
+        setError(data.message ||'Signup failed');
         return;
       }
 
