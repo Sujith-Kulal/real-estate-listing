@@ -14,8 +14,6 @@ export default function SignIn() {
   const { loading,error}=useSelector((state)=>state.user);
   const navigate = useNavigate();
 
-  const dispatch = useDispatch(); 
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -104,7 +102,7 @@ export default function SignIn() {
         </Link>
       </div>
 
-    {error && <p className='text-red-500 mt-5'>{error}</p>}
+    {error && <p className='text-red-700 mt-5'>{error}</p>}
     </div>
   );
 }
@@ -127,7 +125,7 @@ export default function SignIn() {
 
 // import { useState } from 'react';
 // import { Link, useNavigate } from 'react-router-dom';
-// import OAuth from '../components/OAuth';
+//  import OAuth from '../components/OAuth';
 // //---------------inside ------------------------------------------------
 // // export default function SignUp() {
 // //   const [formData,setForData] = useState({})

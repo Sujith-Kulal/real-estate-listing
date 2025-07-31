@@ -25,20 +25,33 @@ export default function OAuth() {
           photo: result.user.photoURL,
         }),
       });
-      const data = await res.json();
+    //   const data = await res.json();
+    //   dispatch(signInSuccess(data));
+    //   navigate('/');
+    // } catch (error) {
+    //   console.log('could not sign in with google', error);
+    // }
+    const text = await res.text();
+      const data = text ? JSON.parse(text) : null;
+
+      if (!res.ok || !data) {
+        throw new Error(data?.message || 'Google sign-in failed');
+      }
+
       dispatch(signInSuccess(data));
       navigate('/');
     } catch (error) {
-      console.log('could not sign in with google', error);
+      console.error('Could not sign in with Google:', error.message);
+      dispatch(signInFailure(error.message));
     }
   };
   return (
     <button
       onClick={handleGoogleClick}
       type='button'
-      //className='bg-red-700 text-white p-3 mt-10 rounded-lg uppercase hover:opacity-95'
+      className='w-full bg-red-700 text-white p-3 mt-10 rounded-lg uppercase hover:opacity-95'
     >
-      {/* Continue with google */}
+       Continue with google 
     </button>
   );
 }
