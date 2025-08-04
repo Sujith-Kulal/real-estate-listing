@@ -1,13 +1,19 @@
+
+
 import { useSelector } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import { confirmAlert } from 'react-confirm-alert';
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../firebase';
+
+//this is for firebase
+
+
+// import {
+//   getDownloadURL,
+//   getStorage,
+//   ref,
+//   uploadBytesResumable,
+// } from 'firebase/storage';
+// import { app } from '../firebase';
 import {
   updateUserStart,
   updateUserSuccess,
@@ -30,37 +36,72 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
+//new added for mongo db
+  const uploadToMongo = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('userId', currentUser._id);
 
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
 
-  useEffect(() => {
-    if (file) {
-      handleFileUpload(file);
+    const data = await res.json();
+    if (res.ok) {
+      setFormData({ ...formData, avatar: `data:${data.contentType};base64,${data.data}` });
+    } else {
+      setFileUploadError(true);
     }
-  }, [file]);
+  } catch (error) {
+    console.error('Upload failed', error);
+    setFileUploadError(true);
+  }
+};
 
-  const handleFileUpload = (file) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+useEffect(() => {
+  if (file) {
+    uploadToMongo(file);
+  }
+}, [file]);
 
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePerc(Math.round(progress));
-      },
-      (error) => {
-        setFileUploadError(true);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, avatar: downloadURL })
-        );
-      }
-    );
-  };
+//till here
+
+
+
+
+//this is for firebase
+
+  // useEffect(() => {
+  //   if (file) {
+  //     handleFileUpload(file);
+  //   }
+  // }, [file]);
+
+  // const handleFileUpload = (file) => {
+  //   const storage = getStorage(app);
+  //   const fileName = new Date().getTime() + file.name;
+  //   const storageRef = ref(storage, fileName);
+  //   const uploadTask = uploadBytesResumable(storageRef, file);
+
+  //   uploadTask.on(
+  //     'state_changed',
+  //     (snapshot) => {
+  //       const progress =
+  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+  //       setFilePerc(Math.round(progress));
+  //     },
+  //     (error) => {
+  //       setFileUploadError(true);
+  //     },
+  //     () => {
+  //       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
+  //         setFormData({ ...formData, avatar: downloadURL })
+  //       );
+  //     }
+  //   );
+  // };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
