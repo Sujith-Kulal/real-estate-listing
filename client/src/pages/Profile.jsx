@@ -1,19 +1,6 @@
-
-
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import { confirmAlert } from 'react-confirm-alert';
-
-//this is for firebase
-
-
-// import {
-//   getDownloadURL,
-//   getStorage,
-//   ref,
-//   uploadBytesResumable,
-// } from 'firebase/storage';
-// import { app } from '../firebase';
 import {
   updateUserStart,
   updateUserSuccess,
@@ -23,8 +10,8 @@ import {
   deleteUserSuccess,
   signOutUserStart,
 } from '../redux/user/userSlice';
-import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -36,72 +23,46 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
-//new added for mongo db
+
+  // ✅ Fixed uploadToMongo with Redux update
   const uploadToMongo = async (file) => {
-  const formData = new FormData();
-  formData.append('image', file);
-  formData.append('userId', currentUser._id);
+    const formDataToSend = new FormData();
+    formDataToSend.append('image', file);
+    formDataToSend.append('userId', currentUser._id);
 
-  try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataToSend,
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      setFormData({ ...formData, avatar: `data:${data.contentType};base64,${data.data}` });
-    } else {
+      const data = await res.json();
+      if (res.ok) {
+        const updatedUser = {
+          ...currentUser,
+          avatar: {
+            data: data.data,
+            contentType: data.contentType,
+          },
+        };
+
+        dispatch(updateUserSuccess(updatedUser)); // ✅ Redux update
+        setFormData({
+          ...formData,
+          avatar: `data:${data.contentType};base64,${data.data}`,
+        });
+      } else {
+        setFileUploadError(true);
+      }
+    } catch (error) {
+      console.error('Upload failed', error);
       setFileUploadError(true);
     }
-  } catch (error) {
-    console.error('Upload failed', error);
-    setFileUploadError(true);
-  }
-};
+  };
 
-useEffect(() => {
-  if (file) {
-    uploadToMongo(file);
-  }
-}, [file]);
-
-//till here
-
-
-
-
-//this is for firebase
-
-  // useEffect(() => {
-  //   if (file) {
-  //     handleFileUpload(file);
-  //   }
-  // }, [file]);
-
-  // const handleFileUpload = (file) => {
-  //   const storage = getStorage(app);
-  //   const fileName = new Date().getTime() + file.name;
-  //   const storageRef = ref(storage, fileName);
-  //   const uploadTask = uploadBytesResumable(storageRef, file);
-
-  //   uploadTask.on(
-  //     'state_changed',
-  //     (snapshot) => {
-  //       const progress =
-  //         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-  //       setFilePerc(Math.round(progress));
-  //     },
-  //     (error) => {
-  //       setFileUploadError(true);
-  //     },
-  //     () => {
-  //       getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-  //         setFormData({ ...formData, avatar: downloadURL })
-  //       );
-  //     }
-  //   );
-  // };
+  useEffect(() => {
+    if (file) uploadToMongo(file);
+  }, [file]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -123,7 +84,6 @@ useEffect(() => {
         dispatch(updateUserFailure(data.message));
         return;
       }
-
       dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
     } catch (error) {
@@ -131,110 +91,101 @@ useEffect(() => {
     }
   };
 
-
   const handleDeleteUser = async () => {
     confirmAlert({
-      customUI: ({ onClose }) => {
-        return (
+      customUI: ({ onClose }) => (
+        <div
+          className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-500 bg-opacity-50"
+          onClick={onClose}
+        >
           <div
-            className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-500 bg-opacity-50"
-            onClick={onClose}
+            className="bg-slate-100 rounded-lg p-4 w-1/2 md:w-1/3 xl:w-1/4"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="bg-slate-100 rounded-lg p-4 w-1/2 md:w-1/3 xl:w-1/4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 className="text-lg font-semibold mb-2">Confirm Delete</h2>
-              <p className="text-gray-600 mb-4">
-                Are you sure you want to delete your account?
-              </p>
-              <div className="flex justify-end">
-                <button
-                  className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
-                  onClick={async () => {
-                    try {
-                      dispatch(deleteUserStart());
-                      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-                        method: 'DELETE',
-                      });
-                      const data = await res.json();
-                      if (data.success === false) {
-                        dispatch(deleteUserFailure(data.message));
-                        return;
-                      }
-                      dispatch(deleteUserSuccess(data));
-                    } catch (error) {
-                      dispatch(deleteUserFailure(error.message));
+            <h2 className="text-lg font-semibold mb-2">Confirm Delete</h2>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete your account?
+            </p>
+            <div className="flex justify-end">
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+                onClick={async () => {
+                  try {
+                    dispatch(deleteUserStart());
+                    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+                      method: 'DELETE',
+                    });
+                    const data = await res.json();
+                    if (data.success === false) {
+                      dispatch(deleteUserFailure(data.message));
+                      return;
                     }
-                    onClose();
-                  }}
-                >
-                  Yes, delete account
-                </button>
-                <button
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded ml-2"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
-              </div>
+                    dispatch(deleteUserSuccess(data));
+                  } catch (error) {
+                    dispatch(deleteUserFailure(error.message));
+                  }
+                  onClose();
+                }}
+              >
+                Yes, delete account
+              </button>
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded ml-2"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
             </div>
           </div>
-        );
-      },
+        </div>
+      ),
     });
   };
 
-
-
   const handleSignOut = async () => {
     confirmAlert({
-      customUI: ({ onClose }) => {
-        return (
+      customUI: ({ onClose }) => (
+        <div
+          className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-500 bg-opacity-50"
+          onClick={onClose}
+        >
           <div
-            className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-500 bg-opacity-50"
-            onClick={onClose}
+            className="bg-slate-100 rounded-lg p-4 w-1/2 md:w-1/3 xl:w-1/4"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="bg-slate-100 rounded-lg p-4 w-1/2 md:w-1/3 xl:w-1/4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 className="text-lg font-semibold mb-2">Confirm Sign Out</h2>
-              <p className="text-gray-600 mb-4">
-                Are you sure you want to sign out?
-              </p>
-              <div className="flex justify-end">
-                <button
-                  className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
-                  onClick={async () => {
-                    try {
-                      dispatch(signOutUserStart());
-                      const res = await fetch('/api/auth/signout');
-                      const data = await res.json();
-                      if (data.success === false) {
-                        dispatch(deleteUserFailure(data.message));
-                        return;
-                      }
-                      dispatch(deleteUserSuccess(data));
-                    } catch (error) {
-                      dispatch(deleteUserFailure(error.message));
+            <h2 className="text-lg font-semibold mb-2">Confirm Sign Out</h2>
+            <p className="text-gray-600 mb-4">Are you sure you want to sign out?</p>
+            <div className="flex justify-end">
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+                onClick={async () => {
+                  try {
+                    dispatch(signOutUserStart());
+                    const res = await fetch('/api/auth/signout');
+                    const data = await res.json();
+                    if (data.success === false) {
+                      dispatch(deleteUserFailure(data.message));
+                      return;
                     }
-                    onClose();
-                  }}
-                >
-                  Yes, sign out
-                </button>
-                <button
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded ml-2"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
-              </div>
+                    dispatch(deleteUserSuccess(data));
+                  } catch (error) {
+                    dispatch(deleteUserFailure(error.message));
+                  }
+                  onClose();
+                }}
+              >
+                Yes, sign out
+              </button>
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded ml-2"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
             </div>
           </div>
-        );
-      },
+        </div>
+      ),
     });
   };
 
@@ -247,7 +198,6 @@ useEffect(() => {
         setShowListingsError(true);
         return;
       }
-
       setUserListings(data);
     } catch (error) {
       setShowListingsError(true);
@@ -264,14 +214,12 @@ useEffect(() => {
         console.log(data.message);
         return;
       }
-
-      setUserListings((prev) =>
-        prev.filter((listing) => listing._id !== listingId)
-      );
+      setUserListings((prev) => prev.filter((listing) => listing._id !== listingId));
     } catch (error) {
       console.log(error.message);
     }
   };
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
@@ -285,7 +233,12 @@ useEffect(() => {
         />
         <img
           onClick={() => fileRef.current.click()}
-          src={formData.avatar || currentUser.avatar}
+          src={
+            formData.avatar ||
+            (currentUser.avatar?.data
+              ? `data:${currentUser.avatar.contentType};base64,${currentUser.avatar.data}`
+              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png')
+          }
           alt='profile'
           className='rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2'
         />
@@ -319,7 +272,6 @@ useEffect(() => {
           onChange={handleChange}
           disabled
         />
-      
         <button
           disabled={loading}
           className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
@@ -333,11 +285,9 @@ useEffect(() => {
           Create Listing
         </Link>
       </form>
+
       <div className='flex justify-between mt-5'>
-        <span
-          onClick={handleDeleteUser}
-          className='text-red-700 cursor-pointer'
-        >
+        <span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>
           Delete account
         </span>
         <span onClick={handleSignOut} className='text-red-700 cursor-pointer'>
@@ -358,9 +308,7 @@ useEffect(() => {
 
       {userListings && userListings.length > 0 && (
         <div className='flex flex-col gap-4'>
-          <h1 className='text-center mt-7 text-2xl font-semibold'>
-            Your Listings
-          </h1>
+          <h1 className='text-center mt-7 text-2xl font-semibold'>Your Listings</h1>
           {userListings.map((listing) => (
             <div
               key={listing._id}
@@ -379,7 +327,6 @@ useEffect(() => {
               >
                 <p>{listing.name}</p>
               </Link>
-
               <div className='flex flex-col item-center'>
                 <button
                   onClick={() => handleListingDelete(listing._id)}
