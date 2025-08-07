@@ -101,6 +101,8 @@ export default function CreateListing() {
       const res = await fetch('/api/listing/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+//added this for unauthoize error while clickin the craete listing
+ credentials: 'include',
         body: JSON.stringify({
           ...formData,
           userRef: currentUser._id,
