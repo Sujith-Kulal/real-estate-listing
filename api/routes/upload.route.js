@@ -1,43 +1,82 @@
+// import express from 'express';
+// import multer from 'multer';
+// import path from 'path';
+// import { v4 as uuidv4 } from 'uuid';
+// import fs from 'fs';
+
+// const router = express.Router();
+
+// // Ensure uploads directory exists
+// const uploadsDir = path.join(process.cwd(), 'uploads');
+// if (!fs.existsSync(uploadsDir)) {
+//   fs.mkdirSync(uploadsDir);
+// }
+
+// // Multer config for saving files to /uploads
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, uploadsDir);
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueName = uuidv4() + path.extname(file.originalname);
+//     cb(null, uniqueName);
+//   },
+// });
+
+// const upload = multer({ storage });
+
+// // POST route to upload multiple listing images
+// router.post('/', upload.array('images', 6), (req, res) => {
+//   try {
+//     const urls = req.files.map((file) => `/uploads/${file.filename}`);
+//     return res.status(200).json(urls); // send URLs back to frontend
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ success: false, message: 'Image upload failed' });
+//   }
+// });
+
+// export default router;
+
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
+import User from '../models/user.model.js';
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Multer config for saving files to /uploads
+// Disk storage for uploaded images
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    cb(null, 'uploads/'); // folder where images are stored
   },
   filename: (req, file, cb) => {
-    const uniqueName = uuidv4() + path.extname(file.originalname);
+    const uniqueName = Date.now() + '-' + file.originalname;
     cb(null, uniqueName);
-  },
+  }
 });
 
 const upload = multer({ storage });
 
-// POST route to upload multiple listing images
-router.post('/', upload.array('images', 6), (req, res) => {
+// Upload route
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const urls = req.files.map((file) => `/uploads/${file.filename}`);
-    return res.status(200).json(urls); // send URLs back to frontend
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, message: 'Image upload failed' });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    // Save only filename in DB
+    const updatedUser = await User.findByIdAndUpdate(
+      req.body.userId,
+      { image: req.file.filename },
+      { new: true }
+    );
+
+    res.json({ success: true, image: req.file.filename, user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 export default router;
-
 
 
 

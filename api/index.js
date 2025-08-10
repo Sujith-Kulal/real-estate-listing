@@ -13,6 +13,7 @@ import listingRouter from './routes/listing.route.js';
 import cookieParser from 'cookie-parser';
 
 import path from 'path';
+import { fileURLToPath } from 'url';
 dotenv.config();
 
  mongoose
@@ -25,9 +26,13 @@ console.log(err);
 });
 
 
-  const __dirname = path.resolve();
+  // const __dirname = path.resolve();
 
 const app = express();
+// Serve uploads folder
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 app.use(cors({
   origin: 'http://localhost:5173', // frontend
@@ -47,7 +52,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
 app.use('/api/upload', uploadRoute);//added
 
-
+//  Serve the uploads folder so images are publicly accessible
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 app.use(express.static(path.join(__dirname, '/client/dist')));
 
