@@ -1,82 +1,117 @@
-// import express from 'express';
-// import multer from 'multer';
-// import path from 'path';
-// import { v4 as uuidv4 } from 'uuid';
-// import fs from 'fs';
+// // routes/upload.route.js
+// import express from "express";
+// import multer from "multer";
+// import path from "path";
+// import { fileURLToPath } from "url";
 
 // const router = express.Router();
 
-// // Ensure uploads directory exists
-// const uploadsDir = path.join(process.cwd(), 'uploads');
-// if (!fs.existsSync(uploadsDir)) {
-//   fs.mkdirSync(uploadsDir);
-// }
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
-// // Multer config for saving files to /uploads
+// // Multer storage config
 // const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, uploadsDir);
+//   destination: function (req, file, cb) {
+//     cb(null, path.join(__dirname, "../uploads"));
 //   },
-//   filename: (req, file, cb) => {
-//     const uniqueName = uuidv4() + path.extname(file.originalname);
-//     cb(null, uniqueName);
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueSuffix);
 //   },
 // });
 
 // const upload = multer({ storage });
 
-// // POST route to upload multiple listing images
-// router.post('/', upload.array('images', 6), (req, res) => {
-//   try {
-//     const urls = req.files.map((file) => `/uploads/${file.filename}`);
-//     return res.status(200).json(urls); // send URLs back to frontend
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ success: false, message: 'Image upload failed' });
+// // Upload route
+// router.post("/", upload.array("images", 10), (req, res) => {
+//   const files = req.files;
+
+//   if (!files || files.length === 0) {
+//     return res.status(400).json({ error: "No files uploaded" });
 //   }
+
+//   const fileUrls = files.map(
+//     (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
+//   );
+
+//   res.json(fileUrls);
 // });
 
 // export default router;
 
-import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import User from '../models/user.model.js';
+
+import express from "express";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Disk storage for uploaded images
+// Multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // folder where images are stored
+    cb(null, path.join(__dirname, "../uploads"));
   },
   filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
-  }
+    cb(null, Date.now() + "-" + file.originalname);
+  },
 });
 
 const upload = multer({ storage });
 
-// Upload route
-router.post('/', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-    // Save only filename in DB
-    const updatedUser = await User.findByIdAndUpdate(
-      req.body.userId,
-      { image: req.file.filename },
-      { new: true }
-    );
-
-    res.json({ success: true, image: req.file.filename, user: updatedUser });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Multiple file upload
+router.post("/", upload.array("images", 6), (req, res) => {
+  const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+  const fileUrls = req.files.map(
+    (file) => `${backendUrl}/uploads/${file.filename}`
+  );
+  res.json(fileUrls);
 });
 
 export default router;
+
+
+// import express from 'express';
+// import multer from 'multer';
+// import path from 'path';
+// import User from '../models/user.model.js';
+
+// const router = express.Router();
+
+// // Disk storage for uploaded images
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'uploads/'); // folder where images are stored
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueName = Date.now() + '-' + file.originalname;
+//     cb(null, uniqueName);
+//   }
+// });
+
+// const upload = multer({ storage });
+
+// // Upload route
+// router.post('/', upload.single('image'), async (req, res) => {
+//   try {
+//     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+//     // Save only filename in DB
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.body.userId,
+//       { image: req.file.filename },
+//       { new: true }
+//     );
+
+//     res.json({ success: true, image: req.file.filename, user: updatedUser });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// export default router;
 
 
 

@@ -27,49 +27,154 @@ export default function CreateListing() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // const handleImageSubmit = async () => {
+  //   if (files.length === 0 || files.length + formData.imageUrls.length > 6) {
+  //     setImageUploadError('You can only upload up to 6 images');
+  //     return;
+  //   }
+
+  //   setUploading(true);
+  //   setImageUploadError(false);
+
+  //   const formDataObj = new FormData();
+  //   for (let i = 0; i < files.length; i++) {
+  //     formDataObj.append('images', files[i]);
+  //   }
+
+  //   try {
+  //     const res = await fetch('/api/upload', {
+  //       method: 'POST',
+  //       body: formDataObj,
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (res.ok) {
+  //       setFormData((prev) => ({
+  //         ...prev,
+  //         imageUrls: prev.imageUrls.concat(data), // data is array of uploaded image paths
+  //       }));
+  //     }
+
+  //     else {
+  //       setImageUploadError('Image upload failed');
+  //     }
+  //   } catch (err) {
+  //     setImageUploadError('Image upload failed');
+  //   }
+
+  //   setUploading(false);
+  // };
+
+  // const handleRemoveImage = (index) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+  //   }));
+  // };
+  
+
+// const handleImageSubmit = async () => {
+//   if (files.length === 0 || files.length + formData.imageUrls.length > 6) {
+//     setImageUploadError('You can only upload up to 6 images');
+//     return;
+//   }
+
+//   setUploading(true);
+//   setImageUploadError(false);
+
+//   const formDataObj = new FormData();
+//   for (let i = 0; i < files.length; i++) {
+//     formDataObj.append('images', files[i]);
+//   }
+
+//   try {
+//     const res = await fetch('/api/upload', {
+//       method: 'POST',
+//       body: formDataObj,
+//     });
+
+//     const data = await res.json();
+
+//     if (res.ok) {
+//       // data is already full URLs, no extra mapping needed
+//       setFormData((prev) => ({
+//         ...prev,
+//         imageUrls: [...prev.imageUrls, ...data],
+//       }));
+//     } else {
+//       setImageUploadError('Image upload failed');
+//     }
+//   } catch (err) {
+//     setImageUploadError('Image upload failed');
+//   }
+
+//   setUploading(false);
+// };
+
+
+
+
+
+
+
+
+  /////////////////////
   const handleImageSubmit = async () => {
-    if (files.length === 0 || files.length + formData.imageUrls.length > 6) {
-      setImageUploadError('You can only upload up to 6 images');
-      return;
-    }
+  if (files.length === 0 || files.length + formData.imageUrls.length > 6) {
+    setImageUploadError('You can only upload up to 6 images');
+    return;
+  }
 
-    setUploading(true);
-    setImageUploadError(false);
+  setUploading(true);
+  setImageUploadError(false);
 
-    const formDataObj = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formDataObj.append('images', files[i]);
-    }
+  const formDataObj = new FormData();
+  for (let i = 0; i < files.length; i++) {
+    formDataObj.append('images', files[i]);
+  }
 
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formDataObj,
-      });
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formDataObj,
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-        setFormData((prev) => ({
-          ...prev,
-          imageUrls: prev.imageUrls.concat(data), // data is array of uploaded image paths
-        }));
-      } else {
-        setImageUploadError('Image upload failed');
-      }
-    } catch (err) {
+    if (res.ok) {
+      // ✅ data will already be full URLs from backend
+      setFormData((prev) => ({
+        ...prev,
+        imageUrls: prev.imageUrls.concat(data),
+      }));
+    } else {
       setImageUploadError('Image upload failed');
     }
+  } catch (err) {
+    setImageUploadError('Image upload failed');
+  }
 
-    setUploading(false);
-  };
+  setUploading(false);
+};
 
-  const handleRemoveImage = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
-    }));
-  };
+
+
+//////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const handleChange = (e) => {
     const { id, type, value, checked } = e.target;
