@@ -8,9 +8,7 @@ export default function ListingItem({ listing }) {
         <img
           src={
             listing.imageUrls?.[0]
-              ? listing.imageUrls[0].startsWith('data')
-                ? listing.imageUrls[0] // already has prefix
-                : 'data:image/jpeg;base64,' + listing.imageUrls[0] // add prefix for raw base64
+              ? listing.imageUrls[0]
               : 'https://53.fs1.hubspotusercontent-na1.net/hub/53/hubfs/Sales_Blog/real-estate-business-compressor.jpg?width=595&height=400&name=real-estate-business-compressor.jpg'
           }
           alt='listing cover'

@@ -57,11 +57,11 @@ export default function Listing() {
       {listing && !loading && !error && (
         <div>
           <Swiper navigation>
-            {listing.imageUrls.map((filename) => (
-              <SwiperSlide key={filename}>
+            {listing.imageUrls.map((url) => (
+              <SwiperSlide key={url}>
                 <div className='mt-10 flex items-center justify-center'>
                   <img
-                    src={`http://localhost:3000/uploads/${filename}`}
+                    src={url}
                     alt='listing'
                     className='h-[500px] w-auto object-contain'
                   />

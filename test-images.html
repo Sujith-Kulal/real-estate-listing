@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+</head>
+<body>
+    <h1>Testing Image Access</h1>
+    <div id="images"></div>
+    
+    <script>
+        // Test a few sample images from the uploads folder
+        const testImages = [
+            'http://localhost:3000/uploads/1754976064677-WhatsApp_Image_2025-..._imresizer.jpg',
+            'http://localhost:3000/uploads/1754938838209-landscape-3688043_1920.jpg',
+            'http://localhost:3000/uploads/1754938140613-OIP (1).jpeg'
+        ];
+        
+        const container = document.getElementById('images');
+        
+        testImages.forEach((url, index) => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.width = '200px';
+            img.style.height = '200px';
+            img.style.objectFit = 'cover';
+            img.style.margin = '10px';
+            img.style.border = '1px solid #ccc';
+            
+            img.onload = () => {
+                console.log(`Image ${index + 1} loaded successfully:`, url);
+                img.style.border = '2px solid green';
+            };
+            
+            img.onerror = () => {
+                console.error(`Image ${index + 1} failed to load:`, url);
+                img.style.border = '2px solid red';
+                img.alt = 'Failed to load';
+            };
+            
+            container.appendChild(img);
+        });
+    </script>
+</body>
+</html>
+
