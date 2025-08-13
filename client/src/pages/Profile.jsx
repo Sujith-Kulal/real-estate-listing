@@ -24,44 +24,51 @@ export default function Profile() {
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
 
-  // ✅ Fixed uploadToMongo with Redux update
-  const uploadToMongo = async (file) => {
+  // Profile picture upload
+  const uploadProfileImage = async (file) => {
     const formDataToSend = new FormData();
     formDataToSend.append('image', file);
     formDataToSend.append('userId', currentUser._id);
 
     try {
-      const res = await fetch('/api/upload', {
+      setFileUploadError(false);
+      setFilePerc(50); // Show upload progress
+
+      const res = await fetch('/api/upload/profile', {
         method: 'POST',
         body: formDataToSend,
       });
 
       const data = await res.json();
-      if (res.ok) {
-        const updatedUser = {
-          ...currentUser,
-          avatar: {
-            data: data.data,
-            contentType: data.contentType,
-          },
-        };
-
-        dispatch(updateUserSuccess(updatedUser)); // ✅ Redux update
+      
+      if (res.ok && data.success) {
+        setFilePerc(100);
+        
+        // Update Redux state with new user data
+        dispatch(updateUserSuccess(data.user));
+        
+        // Update form data for display
         setFormData({
           ...formData,
-          avatar: `data:${data.contentType};base64,${data.data}`,
+          avatar: data.imageUrl,
         });
+        
+        setTimeout(() => {
+          setFilePerc(0);
+        }, 2000);
       } else {
         setFileUploadError(true);
+        setFilePerc(0);
       }
     } catch (error) {
       console.error('Upload failed', error);
       setFileUploadError(true);
+      setFilePerc(0);
     }
   };
 
   useEffect(() => {
-    if (file) uploadToMongo(file);
+    if (file) uploadProfileImage(file);
   }, [file]);
 
   const handleChange = (e) => {
@@ -220,6 +227,22 @@ export default function Profile() {
     }
   };
 
+  // Get profile image source
+  const getProfileImageSrc = () => {
+    // First check if there's a new upload in formData
+    if (formData.avatar) {
+      return formData.avatar;
+    }
+    
+    // Then check if user has an avatar
+    if (currentUser.avatar) {
+      return currentUser.avatar;
+    }
+    
+    // Default profile picture
+    return 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+  };
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
@@ -233,12 +256,7 @@ export default function Profile() {
         />
         <img
           onClick={() => fileRef.current.click()}
-          src={
-            formData.avatar ||
-            (currentUser.avatar?.data
-              ? `data:${currentUser.avatar.contentType};base64,${currentUser.avatar.data}`
-              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png')
-          }
+          src={getProfileImageSrc()}
           alt='profile'
           className='rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2'
         />

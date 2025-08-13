@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     avatar: {
-      data: { type: String, default: '' }, // base64 image string
-      contentType: { type: String, default: '' }, // MIME type like image/jpeg
+      type: String,
+      default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
     },
   },
   { timestamps: true }

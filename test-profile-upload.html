@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .upload-section {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .preview {
+            margin: 20px 0;
+        }
+        .preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 50%;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Profile Picture Upload Test</h1>
+    
+    <div class="upload-section">
+        <h3>Test Profile Picture Upload</h3>
+        <input type="file" id="profileImage" accept="image/*">
+        <button onclick="uploadProfileImage()">Upload Profile Picture</button>
+        
+        <div id="status"></div>
+        <div id="preview" class="preview"></div>
+    </div>
+
+    <div class="upload-section">
+        <h3>Test Listing Images Upload</h3>
+        <input type="file" id="listingImages" accept="image/*" multiple>
+        <button onclick="uploadListingImages()">Upload Listing Images</button>
+        
+        <div id="listingStatus"></div>
+        <div id="listingPreview" class="preview"></div>
+    </div>
+
+    <script>
+        async function uploadProfileImage() {
+            const fileInput = document.getElementById('profileImage');
+            const statusDiv = document.getElementById('status');
+            const previewDiv = document.getElementById('preview');
+            
+            if (!fileInput.files[0]) {
+                statusDiv.innerHTML = '<p class="error">Please select a file</p>';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            formData.append('userId', 'test-user-id'); // Replace with actual user ID
+
+            try {
+                statusDiv.innerHTML = '<p>Uploading...</p>';
+                
+                const response = await fetch('/api/upload/profile', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    statusDiv.innerHTML = '<p class="success">Upload successful!</p>';
+                    previewDiv.innerHTML = `<img src="${data.imageUrl}" alt="Profile">`;
+                    console.log('Upload response:', data);
+                } else {
+                    statusDiv.innerHTML = `<p class="error">Upload failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function uploadListingImages() {
+            const fileInput = document.getElementById('listingImages');
+            const statusDiv = document.getElementById('listingStatus');
+            const previewDiv = document.getElementById('listingPreview');
+            
+            if (!fileInput.files.length) {
+                statusDiv.innerHTML = '<p class="error">Please select files</p>';
+                return;
+            }
+
+            const formData = new FormData();
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('images', fileInput.files[i]);
+            }
+
+            try {
+                statusDiv.innerHTML = '<p>Uploading...</p>';
+                
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '<p class="success">Upload successful!</p>';
+                    previewDiv.innerHTML = data.map(url => 
+                        `<img src="${url}" alt="Listing" style="width: 100px; height: 100px; object-fit: cover; margin: 5px;">`
+                    ).join('');
+                    console.log('Upload response:', data);
+                } else {
+                    statusDiv.innerHTML = `<p class="error">Upload failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,49 +1,8 @@
-// // routes/upload.route.js
-// import express from "express";
-// import multer from "multer";
-// import path from "path";
-// import { fileURLToPath } from "url";
-
-// const router = express.Router();
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// // Multer storage config
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, path.join(__dirname, "../uploads"));
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + "-" + file.originalname;
-//     cb(null, uniqueSuffix);
-//   },
-// });
-
-// const upload = multer({ storage });
-
-// // Upload route
-// router.post("/", upload.array("images", 10), (req, res) => {
-//   const files = req.files;
-
-//   if (!files || files.length === 0) {
-//     return res.status(400).json({ error: "No files uploaded" });
-//   }
-
-//   const fileUrls = files.map(
-//     (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
-//   );
-
-//   res.json(fileUrls);
-// });
-
-// export default router;
-
-
 import express from "express";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
+import User from '../models/user.model.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -59,15 +18,77 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB limit
+  }
+});
 
-// Multiple file upload
+// Profile picture upload (single image)
+router.post("/profile", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file || !req.body.userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing image or userId' 
+      });
+    }
+
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
+
+    // Update user with new avatar URL
+    const user = await User.findByIdAndUpdate(
+      req.body.userId,
+      { avatar: imageUrl },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      imageUrl: imageUrl,
+      user: user 
+    });
+  } catch (error) {
+    console.error('Profile upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Upload failed' 
+    });
+  }
+});
+
+// Listing images upload (multiple images)
 router.post("/", upload.array("images", 6), (req, res) => {
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-  const fileUrls = req.files.map(
-    (file) => `${backendUrl}/uploads/${file.filename}`
-  );
-  res.json(fileUrls);
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "No files uploaded" 
+      });
+    }
+
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const fileUrls = req.files.map(
+      (file) => `${backendUrl}/uploads/${file.filename}`
+    );
+    
+    res.json(fileUrls);
+  } catch (error) {
+    console.error('Listing upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Upload failed' 
+    });
+  }
 });
 
 export default router;

@@ -23,49 +23,56 @@ export default function Header() {
     }
   }, [location.search]);
   return (
-    <header className='bg-slate-200 shadow-md'>
-      <div className='flex justify-between items-center max-w-6xl mx-auto p-3'>
-        <Link to='/'>
-          <h1 className='font-bold text-sm sm:text-xl flex flex-wrap'>
-            <span className='text-slate-500'>BH</span>
-            <span className='text-slate-700'>UMI</span>
+    <header className='bg-white shadow-lg border-b border-gray-100'>
+      <div className='flex justify-between items-center max-w-6xl mx-auto p-4'>
+        <Link to='/' className='flex items-center space-x-2'>
+          <div className='w-10 h-10 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center'>
+            <span className='text-white font-bold text-xl'>B</span>
+          </div>
+          <h1 className='font-bold text-xl text-gray-800'>
+            <span className='text-green-600'>BHUMI</span>
           </h1>
         </Link>
         <form
           onSubmit={handleSubmit}
-          className='bg-slate-100 p-3 rounded-lg flex items-center'
+          className='bg-gray-50 p-3 rounded-xl flex items-center border border-gray-200 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-200 transition-all duration-200'
         >
           <input
             type='text'
-            placeholder='Search...'
-            className='bg-transparent focus:outline-none w-24 sm:w-64'
+            placeholder='Search lands...'
+            className='bg-transparent focus:outline-none w-24 sm:w-64 text-gray-700 placeholder-gray-400'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button>
-            <FaSearch className='text-slate-600' />
+          <button className='text-gray-400 hover:text-green-600 transition-colors'>
+            <FaSearch className='text-lg' />
           </button>
         </form>
-        <ul className='flex gap-4'>
+        <ul className='flex gap-6 items-center'>
           <Link to='/'>
-            <li className='hidden sm:inline text-slate-700 '>
+            <li className='hidden sm:inline text-gray-700 hover:text-green-600 transition-colors font-medium'>
               Home
             </li>
           </Link>
           <Link to='/about'>
-            <li className='hidden sm:inline text-slate-700 '>
+            <li className='hidden sm:inline text-gray-700 hover:text-green-600 transition-colors font-medium'>
               About
+            </li>
+          </Link>
+          <Link to='/contact'>
+            <li className='hidden sm:inline text-gray-700 hover:text-green-600 transition-colors font-medium'>
+              Contact
             </li>
           </Link>
           <Link to='/profile'>
             {currentUser ? (
               <img
-                className='rounded-full h-7 w-7 object-cover'
+                className='rounded-full h-8 w-8 object-cover border-2 border-green-200 hover:border-green-400 transition-colors'
                 src={currentUser.avatar}
                 alt='profile'
               />
             ) : (
-              <li className=' text-slate-700 hover:underline'> Sign in</li>
+              <li className='text-gray-700 hover:text-green-600 transition-colors font-medium'> Sign in</li>
             )}
           </Link>
         </ul>
