@@ -339,12 +339,39 @@ export default function Profile() {
                   className='h-16 w-16 object-contain'
                 />
               </Link>
-              <Link
-                className='text-slate-700 font-semibold  hover:underline truncate flex-1'
-                to={`/listing/${listing._id}`}
-              >
-                <p>{listing.name}</p>
-              </Link>
+              <div className='flex-1'>
+                <Link
+                  className='text-slate-700 font-semibold hover:underline truncate block'
+                  to={`/listing/${listing._id}`}
+                >
+                  <p>{listing.name}</p>
+                </Link>
+                
+                {/* Listing Status */}
+                {listing.status && (
+                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                    listing.status === 'approved' 
+                      ? 'bg-green-100 text-green-800' 
+                      : listing.status === 'rejected' 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                      listing.status === 'approved' 
+                        ? 'bg-green-500' 
+                        : listing.status === 'rejected' 
+                        ? 'bg-red-500' 
+                        : 'bg-yellow-500'
+                    }`}></span>
+                    {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
+                    {listing.status === 'rejected' && listing.adminNotes && (
+                      <span className='ml-1 text-xs opacity-75'>
+                        - {listing.adminNotes}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className='flex flex-col item-center'>
                 <button
                   onClick={() => handleListingDelete(listing._id)}

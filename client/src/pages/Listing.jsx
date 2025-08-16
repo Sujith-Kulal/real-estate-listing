@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore from 'swiper';
 import { useSelector } from 'react-redux';
@@ -20,7 +20,7 @@ export default function Listing() {
   SwiperCore.use([Navigation]);
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState(false);
   const params = useParams();
@@ -31,17 +31,33 @@ export default function Listing() {
       try {
         setLoading(true);
         const res = await fetch(`/api/listing/get/${params.listingId}`);
-        const data = await res.json();
-        if (data.success === false) {
-          setError(true);
+        
+        if (!res.ok) {
+          // Handle HTTP errors (404, 500, etc.)
+          if (res.status === 404) {
+            setError('Listing not found!');
+          } else {
+            setError('Something went wrong!');
+          }
           setLoading(false);
           return;
         }
+        
+        const data = await res.json();
+        
+        // Check if the response has an error message
+        if (data.message && data.message.includes('not found')) {
+          setError(data.message);
+          setLoading(false);
+          return;
+        }
+        
         setListing(data);
         setLoading(false);
         setError(false);
       } catch (error) {
-        setError(true);
+        console.error('Error fetching listing:', error);
+        setError('Something went wrong!');
         setLoading(false);
       }
     };
@@ -52,7 +68,19 @@ export default function Listing() {
     <main>
       {loading && <p className='text-center my-7 text-2xl'>Loading...</p>}
       {error && (
-        <p className='text-center my-7 text-2xl'>Something went wrong!</p>
+        <div className='text-center my-7'>
+          <p className='text-2xl text-red-600 mb-4'>{error}</p>
+          {error === 'Listing not found!' && (
+            <div className='text-gray-600'>
+              <p>This listing may not exist or may not be approved yet.</p>
+              <p className='mt-2'>
+                <Link to='/' className='text-green-600 hover:underline'>
+                  ← Back to Home
+                </Link>
+              </p>
+            </div>
+          )}
+        </div>
       )}
       {listing && !loading && !error && (
         <div>
@@ -89,6 +117,31 @@ export default function Listing() {
           )}
 
           <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
+            {/* Listing Status Indicator */}
+            {listing.status && (
+              <div className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${
+                listing.status === 'approved' 
+                  ? 'bg-green-100 text-green-800' 
+                  : listing.status === 'rejected' 
+                  ? 'bg-red-100 text-red-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                <span className={`w-2 h-2 rounded-full mr-2 ${
+                  listing.status === 'approved' 
+                    ? 'bg-green-500' 
+                    : listing.status === 'rejected' 
+                    ? 'bg-red-500' 
+                    : 'bg-yellow-500'
+                }`}></span>
+                Status: {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
+                {listing.status === 'rejected' && listing.adminNotes && (
+                  <span className='ml-2 text-xs opacity-75'>
+                    (Reason: {listing.adminNotes})
+                  </span>
+                )}
+              </div>
+            )}
+            
             <p className='text-2xl font-semibold'>
               {listing.name} - Rs{' '}
               {listing.offer

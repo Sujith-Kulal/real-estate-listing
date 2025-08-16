@@ -6,7 +6,9 @@ import { useEffect, useState } from 'react';
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams(window.location.search);
@@ -22,6 +24,16 @@ export default function Header() {
       setSearchTerm(searchTermFromUrl);
     }
   }, [location.search]);
+
+  // Check if current user is admin
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'admin') {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [currentUser]);
+
   return (
     <header className='bg-white shadow-lg border-b border-gray-100'>
       <div className='flex justify-between items-center max-w-6xl mx-auto p-4'>
@@ -64,6 +76,19 @@ export default function Header() {
               Contact
             </li>
           </Link>
+          <Link to='/soil-climate-demo'>
+            <li className='hidden sm:inline text-gray-700 hover:text-green-600 transition-colors font-medium'>
+              Demo
+            </li>
+          </Link>
+          {/* Only show Admin Dashboard link for admin users */}
+          {isAdmin && (
+            <Link to='/admin/dashboard'>
+              <li className='hidden sm:inline text-gray-700 hover:text-green-600 transition-colors font-medium'>
+                Admin Dashboard
+              </li>
+            </Link>
+          )}
           <Link to='/profile'>
             {currentUser ? (
               <img
