@@ -18,6 +18,7 @@ import {
   FaTag,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
+import NearbyTransport from '../components/NearbyTransport';
 
 export default function Listing() {
   SwiperCore.use([Navigation]);
@@ -238,6 +239,9 @@ export default function Listing() {
                 </div>
               </div>
             </div>
+
+            {/* Nearby Transport */}
+            <NearbyTransport latitude={listing.latitude} longitude={listing.longitude} radius={300} />
 
             {/* Additional Information */}
             <div className='bg-green-50 p-4 rounded-lg border border-green-200'>

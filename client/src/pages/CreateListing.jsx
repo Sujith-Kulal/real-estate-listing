@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
+import NearbyTransport from '../components/NearbyTransport';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -437,6 +438,12 @@ export default function CreateListing() {
             {formData.latitude && formData.longitude && (
               <div className='text-sm text-green-600 bg-green-50 p-2 rounded'>
                 Selected: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+              </div>
+            )}
+
+            {formData.latitude && formData.longitude && (
+              <div className='mt-4'>
+                <NearbyTransport latitude={formData.latitude} longitude={formData.longitude} radius={300} />
               </div>
             )}
           </div>

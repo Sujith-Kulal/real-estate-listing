@@ -17,6 +17,7 @@ import authRouter from './routes/auth.route.js';
 import listingRouter from './routes/listing.route.js';
 import soilClimateRouter from './routes/soilClimate.js';
 import adminRouter from './routes/admin.route.js';
+import transportRouter from './routes/transport.route.js';
 import cookieParser from 'cookie-parser';
 
 import path from 'path';
@@ -60,6 +61,7 @@ app.use('/api/listing', listingRouter);
 app.use('/api/upload', uploadRoute);//added
 app.use('/api/soil-climate', soilClimateRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/transport', transportRouter);
 
 //  Serve the uploads folder so images are publicly accessible
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
