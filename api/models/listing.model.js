@@ -14,36 +14,42 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    regularPrice: {
-      type: Number,
-      required: true,
-    },
-    discountPrice: {
-      type: Number,
-      required: true,
-    },
-    bathrooms: {
-      type: Number,
-      required: true,
-    },
-    bedrooms: {
-      type: Number,
-      required: true,
-    },
-    furnished: {
-      type: Boolean,
-      required: true,
-    },
-    parking: {
-      type: Boolean,
-      required: true,
-    },
     type: {
       type: String,
       required: true,
+      enum: ['sale', 'rent'],
     },
-    offer: {
+    ownerType: {
+      type: String,
+      required: true,
+      enum: ['individual', 'company', 'government', 'trust'],
+    },
+    plotArea: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    pricePerSqft: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    boundaryWall: {
       type: Boolean,
+      required: true,
+      default: false,
+    },
+    latitude: {
+      type: Number,
+      required: true,
+    },
+    longitude: {
+      type: Number,
       required: true,
     },
     imageUrls: {

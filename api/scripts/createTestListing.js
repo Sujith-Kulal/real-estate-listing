@@ -29,19 +29,23 @@ const createTestListing = async () => {
       return;
     }
 
-    // Create a test listing
+    // Create a test listing with new structure including price information
+    const plotArea = 2500; // 2500 sq ft
+    const pricePerSqft = 8000; // ₹8000 per sq ft
+    const totalPrice = plotArea * pricePerSqft;
+
     const testListing = new Listing({
       name: 'Test Land Plot',
       description: 'This is a test listing to verify the system works properly.',
-      address: '123 Test Street, Test City',
-      regularPrice: 50000,
-      discountPrice: 45000,
-      bathrooms: 2,
-      bedrooms: 3,
-      furnished: true,
-      parking: true,
+      address: '123 Test Street, Test City, Karnataka',
       type: 'sale',
-      offer: true,
+      ownerType: 'individual',
+      plotArea: plotArea,
+      pricePerSqft: pricePerSqft,
+      totalPrice: totalPrice,
+      boundaryWall: true,
+      latitude: 12.9716,
+      longitude: 77.5946, // Bangalore coordinates
       imageUrls: [
         'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
       ],
@@ -53,7 +57,13 @@ const createTestListing = async () => {
     console.log('✅ Test listing created successfully!');
     console.log('  - Name:', testListing.name);
     console.log('  - Status:', testListing.status);
-    console.log('  - Price: $', testListing.regularPrice);
+    console.log('  - Type:', testListing.type);
+    console.log('  - Owner Type:', testListing.ownerType);
+    console.log('  - Plot Area:', testListing.plotArea, 'sq ft');
+    console.log('  - Price per sq ft: ₹', testListing.pricePerSqft.toLocaleString('en-IN'));
+    console.log('  - Total Price: ₹', testListing.totalPrice.toLocaleString('en-IN'));
+    console.log('  - Boundary Wall:', testListing.boundaryWall ? 'Yes' : 'No');
+    console.log('  - Location:', testListing.latitude, ',', testListing.longitude);
     console.log('  - Owner:', testUser.email);
 
   } catch (error) {
