@@ -182,3 +182,7 @@ Test the price feature by:
 4. Checking price formatting and calculations
 5. Testing form validation and error messages
 
+
+
+
+

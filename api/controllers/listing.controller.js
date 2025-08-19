@@ -1,5 +1,7 @@
 import Listing from '../models/listing.model.js';
 import { errorHandler } from '../utils/error.js';
+import User from '../models/user.model.js';
+import { sendEmail } from '../utils/sendEmail.js';
 
 export const createListing = async (req, res, next) => {
   try {
@@ -119,6 +121,38 @@ export const getListings = async (req, res, next) => {
 
     // Return empty array if no listings found (this is normal, not an error)
     return res.status(200).json(listings);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Buyer contacting the owner about a listing
+export const contactOwner = async (req, res, next) => {
+  try {
+    const { listingId } = req.params;
+    const { message } = req.body;
+    const listing = await Listing.findById(listingId);
+    if (!listing) return next(errorHandler(404, 'Listing not found!'));
+
+    const owner = await User.findById(listing.userRef).select('email username');
+    if (!owner?.email) return next(errorHandler(400, 'Owner email not available'));
+
+    const buyer = await User.findById(req.user.id).select('email username');
+    const result = await sendEmail({
+      to: owner.email,
+      subject: `New interest in your property: ${listing.name}`,
+      html: `<p>Hi ${owner.username},</p>
+             <p>${buyer.username} is interested in your property <strong>${listing.name}</strong>.</p>
+             <p>Message:</p><blockquote>${message || '(no message provided)'} </blockquote>
+             <p>Buyer contact: ${buyer.email}</p>`,
+      text: `Hi ${owner.username}, ${buyer.username} is interested in ${listing.name}. Message: ${message || '(no message)'} Buyer: ${buyer.email}`
+    });
+
+    const sent = result && !result.skipped;
+    return res.status(200).json({ 
+      message: sent ? 'Email sent to owner' : 'Email skipped (SMTP not configured)',
+      sent
+    });
   } catch (error) {
     next(error);
   }

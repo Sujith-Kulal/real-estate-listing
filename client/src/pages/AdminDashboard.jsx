@@ -304,11 +304,19 @@ export default function AdminDashboard() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h4 className="text-lg font-medium text-gray-900">{listing.name}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{listing.description}</p>
-                            <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-                              <span>Price: ${listing.regularPrice}</span>
-                              <span>Type: {listing.type}</span>
-                              <span>By: {listing.userRef?.username || 'Unknown'}</span>
+                            <p className="text-sm text-gray-600 mt-1 line-clamp-3">{listing.description}</p>
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                              <div><span className="text-gray-500">Type:</span> <span className="font-medium">{listing.type}</span></div>
+                              <div><span className="text-gray-500">Plot Area:</span> <span className="font-medium">{listing.plotArea?.toLocaleString('en-IN')} sq ft</span></div>
+                              <div><span className="text-gray-500">Price/sqft:</span> <span className="font-medium">₹{listing.pricePerSqft?.toLocaleString('en-IN')}</span></div>
+                              <div><span className="text-gray-500">Total:</span> <span className="font-medium">₹{listing.totalPrice?.toLocaleString('en-IN')}</span></div>
+                              <div><span className="text-gray-500">Owner:</span> <span className="font-medium">{listing.owner?.username || 'Unknown'}</span></div>
+                              <div><span className="text-gray-500">Email:</span> <span className="font-medium">{listing.owner?.email || '-'}</span></div>
+                              {listing.owner?.phone && (
+                                <div><span className="text-gray-500">Phone:</span> <span className="font-medium">{listing.owner.phone}</span></div>
+                              )}
+                              <div className="col-span-full"><span className="text-gray-500">Address:</span> <span className="font-medium">{listing.address}</span></div>
+                              <div className="col-span-full"><span className="text-gray-500">Coordinates:</span> <span className="font-medium">{listing.latitude}, {listing.longitude}</span></div>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">

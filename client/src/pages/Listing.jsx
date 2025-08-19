@@ -241,7 +241,10 @@ export default function Listing() {
             </div>
 
             {/* Nearby Transport */}
-            <NearbyTransport latitude={listing.latitude} longitude={listing.longitude} radius={300} />
+            <div className='bg-white p-4 rounded-lg border'>
+              <h3 className='text-lg font-semibold mb-2'>Nearby Transport (within 300m)</h3>
+              <NearbyTransport latitude={listing.latitude} longitude={listing.longitude} radius={300} />
+            </div>
 
             {/* Additional Information */}
             <div className='bg-green-50 p-4 rounded-lg border border-green-200'>

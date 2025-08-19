@@ -23,6 +23,7 @@ export const updateUser = async (req, res, next) => {
         $set: {
           username: req.body.username,
           email: req.body.email,
+          phone: req.body.phone,
           password: req.body.password,
           avatar: req.body.avatar,
         },
@@ -65,8 +66,7 @@ export const getUserListings = async (req, res, next) => {
 
 export const getUser = async (req, res, next) => {
   try {
-    
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select('-__v');
   
     if (!user) return next(errorHandler(404, 'User not found!'));
   

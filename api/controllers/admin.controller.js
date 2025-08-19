@@ -1,5 +1,6 @@
 import User from '../models/user.model.js';
 import Listing from '../models/listing.model.js';
+import { sendEmail } from '../utils/sendEmail.js';
 import bcryptjs from 'bcryptjs';
 import { errorHandler } from '../utils/error.js';
 import jwt from 'jsonwebtoken';
@@ -85,10 +86,17 @@ export const getDashboardStats = async (req, res, next) => {
 export const getPendingListings = async (req, res, next) => {
   try {
     const pendingListings = await Listing.find({ status: 'pending' })
-      .populate('userRef', 'username email')
       .sort({ createdAt: -1 });
+
+    // Manually attach owner details since userRef is stored as string
+    const listingsWithOwner = await Promise.all(
+      pendingListings.map(async (doc) => {
+        const owner = await User.findById(doc.userRef).select('username email phone');
+        return { ...doc._doc, owner };
+      })
+    );
     
-    res.status(200).json(pendingListings);
+    res.status(200).json(listingsWithOwner);
   } catch (error) {
     next(error);
   }
@@ -112,7 +120,22 @@ export const approveListing = async (req, res, next) => {
     listing.approvedAt = new Date();
     
     await listing.save();
-    
+
+    try {
+      // notify owner
+      const owner = await User.findById(listing.userRef).select('email username phone');
+      if (owner?.email) {
+        await sendEmail({
+          to: owner.email,
+          subject: `Your listing "${listing.name}" is approved` ,
+          html: `<p>Hi ${owner.username},</p><p>Your listing <strong>${listing.name}</strong> has been approved by admin.</p><p>Notes: ${listing.adminNotes || 'N/A'}</p>`,
+          text: `Hi ${owner?.username}, Your listing ${listing.name} has been approved. Notes: ${listing.adminNotes || 'N/A'}`
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to send approval email', e?.message);
+    }
+
     res.status(200).json({ message: 'Listing approved successfully!', listing });
   } catch (error) {
     next(error);
@@ -137,7 +160,21 @@ export const rejectListing = async (req, res, next) => {
     listing.approvedAt = new Date();
     
     await listing.save();
-    
+
+    try {
+      const owner = await User.findById(listing.userRef).select('email username phone');
+      if (owner?.email) {
+        await sendEmail({
+          to: owner.email,
+          subject: `Your listing "${listing.name}" is rejected` ,
+          html: `<p>Hi ${owner.username},</p><p>Your listing <strong>${listing.name}</strong> was rejected by admin.</p><p>Reason: ${listing.adminNotes || 'Not specified'}.</p>`,
+          text: `Hi ${owner?.username}, Your listing ${listing.name} was rejected. Reason: ${listing.adminNotes || 'Not specified'}.`
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to send rejection email', e?.message);
+    }
+
     res.status(200).json({ message: 'Listing rejected successfully!', listing });
   } catch (error) {
     next(error);
