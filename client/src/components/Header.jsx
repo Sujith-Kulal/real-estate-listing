@@ -76,11 +76,6 @@ export default function Header() {
               Contact
             </li>
           </Link>
-          <Link to='/soil-climate-demo'>
-            <li className='hidden sm:inline text-gray-700 hover:text-green-600 transition-colors font-medium'>
-              Demo
-            </li>
-          </Link>
           {/* Only show Admin Dashboard link for admin users */}
           {isAdmin && (
             <Link to='/admin/dashboard'>

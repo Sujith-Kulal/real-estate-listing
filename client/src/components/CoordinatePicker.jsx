@@ -205,7 +205,7 @@ const CoordinatePicker = ({ onCoordinatesChange, initialCoordinates = null }) =>
           <li>• Enter coordinates manually for precise location</li>
           <li>• Use "Current Location" to get your GPS coordinates</li>
           <li>• Search by address to find coordinates automatically</li>
-          <li>• Coordinates will be used to fetch real-time soil & climate data</li>
+          <li>• Coordinates will be used to analyze nearby transport facilities</li>
         </ul>
       </div>
     </div>

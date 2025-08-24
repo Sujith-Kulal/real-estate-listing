@@ -136,10 +136,10 @@ const PropertySearch = () => {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          🏠 Property Search with Soil & Climate Intelligence
+          🏠 Property Search with Transport Intelligence
         </h1>
         <p className="text-xl text-gray-600">
-          Find properties in {searchCity} with detailed environmental analysis and Bhumi Scores
+          Find properties in {searchCity} with detailed transport connectivity analysis and Transport Scores
         </p>
       </div>
 
@@ -152,30 +152,30 @@ const PropertySearch = () => {
               type="text"
               value={searchCity}
               onChange={(e) => setSearchCity(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter city name"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Min Bhumi Score</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Min Transport Score</label>
             <input
               type="number"
               value={filters.minScore}
               onChange={(e) => setFilters({...filters, minScore: parseInt(e.target.value)})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               min="0"
-              max="100"
+              max="10"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Max Bhumi Score</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Max Transport Score</label>
             <input
               type="number"
               value={filters.maxScore}
               onChange={(e) => setFilters({...filters, maxScore: parseInt(e.target.value)})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               min="0"
-              max="100"
+              max="10"
             />
           </div>
           <div>
@@ -184,7 +184,7 @@ const PropertySearch = () => {
               type="number"
               value={filters.maxPrice}
               onChange={(e) => setFilters({...filters, maxPrice: parseInt(e.target.value)})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="10000000"
             />
           </div>
@@ -194,7 +194,7 @@ const PropertySearch = () => {
           <button
             onClick={searchProperties}
             disabled={loading}
-            className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             <FaSearch className="mr-2" />
             {loading ? 'Searching...' : 'Search Properties'}

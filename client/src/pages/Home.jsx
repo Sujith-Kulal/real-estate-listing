@@ -4,7 +4,7 @@ import { Navigation } from 'swiper/modules';
 import SwiperCore from 'swiper';
 import 'swiper/css/bundle';
 import ListingItem from '../components/ListingItem';
-import { FaHandshake, FaGlobe, FaChartLine, FaThermometerHalf, FaLeaf, FaCloudSun } from 'react-icons/fa';
+import { FaHandshake, FaGlobe, FaChartLine, FaThermometerHalf, FaLeaf, FaCloudSun, FaRoad, FaBus, FaPlane } from 'react-icons/fa';
 
 export default function Home() {
   const [offerListings, setOfferListings] = useState([]);
@@ -97,108 +97,108 @@ export default function Home() {
          </div>
        </section>
 
-       {/* Live Soil & Climate Data Integration Section */}
+       {/* Transport Intelligence Section */}
        <section className="py-20 bg-gray-50">
          <div className="max-w-6xl mx-auto px-4">
            <div className="text-center mb-16">
-             <h2 className="text-4xl font-bold text-gray-800 mb-4">Live Soil & Climate Data Integration</h2>
+             <h2 className="text-4xl font-bold text-gray-800 mb-4">Transport Intelligence</h2>
              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-               Pull real-time soil quality and weather/climate predictions from free APIs. When viewing a plot, the buyer can see soil fertility, flood risk, and crop suitability.
+               Discover nearby transport facilities including highways, bus stands, railway stations, and airports for every property location.
              </p>
            </div>
            
            <div className="grid md:grid-cols-3 gap-8">
              <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <FaThermometerHalf className="text-3xl text-green-600" />
+               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                 <FaRoad className="text-3xl text-blue-600" />
                </div>
-               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Real-Time Weather Data</h3>
+               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Highway & Road Access</h3>
                <p className="text-gray-600 text-center mb-4">
-                 Access current weather conditions and climate predictions for any land plot location
+                 Find properties with easy access to major highways and primary roads
                </p>
                <ul className="text-sm text-gray-500 space-y-2">
                  <li className="flex items-center">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Temperature & humidity monitoring
+                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                   Major highway proximity
                  </li>
                  <li className="flex items-center">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Rainfall predictions
+                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                   Primary road connectivity
                  </li>
                  <li className="flex items-center">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Seasonal climate analysis
+                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                   Distance-based scoring
                  </li>
                </ul>
              </div>
              
              <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <FaLeaf className="text-3xl text-green-600" />
+                 <FaBus className="text-3xl text-green-600" />
                </div>
-               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Soil Quality Analysis</h3>
+               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Public Transport</h3>
                <p className="text-gray-600 text-center mb-4">
-                 Comprehensive soil fertility assessment and composition analysis for optimal land use
+                 Locate properties near bus stands, railway stations, and metro stops
                </p>
                <ul className="text-sm text-gray-500 space-y-2">
                  <li className="flex items-center">
                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   pH levels & nutrient content
+                   Bus stand accessibility
                  </li>
                  <li className="flex items-center">
                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Soil type classification
+                   Railway station proximity
                  </li>
                  <li className="flex items-center">
                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Fertility scoring
+                   Metro connectivity
                  </li>
                </ul>
              </div>
              
              <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <FaCloudSun className="text-3xl text-green-600" />
+               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                 <FaPlane className="text-3xl text-purple-600" />
                </div>
-               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Risk Assessment</h3>
+               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Airport Connectivity</h3>
                <p className="text-gray-600 text-center mb-4">
-                 Evaluate flood risk, crop suitability, and environmental factors for informed decisions
+                 Find properties with easy access to airports and air travel facilities
                </p>
                <ul className="text-sm text-gray-500 space-y-2">
                  <li className="flex items-center">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Flood risk mapping
+                   <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                   Airport proximity
                  </li>
                  <li className="flex items-center">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Crop suitability analysis
+                   <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                   Travel convenience
                  </li>
                  <li className="flex items-center">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Environmental impact assessment
+                   <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                   Long-distance connectivity
                  </li>
                </ul>
              </div>
            </div>
            
            <div className="text-center mt-12">
-             <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-8 text-white max-w-4xl mx-auto">
-               <h3 className="text-2xl font-bold mb-4">Powered by Free APIs</h3>
-               <p className="text-green-100 mb-6">
-                 Our platform integrates with multiple free weather, soil, and climate APIs to provide comprehensive data without additional costs to users.
+             <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-2xl p-8 text-white max-w-4xl mx-auto">
+               <h3 className="text-2xl font-bold mb-4">Powered by OpenStreetMap</h3>
+               <p className="text-blue-100 mb-6">
+                 Our platform integrates with OpenStreetMap to provide real-time transport facility data for every property location.
                </p>
                <div className="grid md:grid-cols-3 gap-6 text-center">
                  <div>
-                   <div className="text-3xl font-bold text-green-200">24/7</div>
-                   <div className="text-green-100">Real-time Updates</div>
+                   <div className="text-3xl font-bold text-blue-200">Real-time</div>
+                   <div className="text-blue-100">Data Updates</div>
                  </div>
                  <div>
-                   <div className="text-3xl font-bold text-green-200">100%</div>
-                   <div className="text-green-100">Free Access</div>
+                   <div className="text-3xl font-bold text-blue-200">100%</div>
+                   <div className="text-blue-100">Free Access</div>
                  </div>
                  <div>
-                   <div className="text-3xl font-bold text-green-200">Global</div>
-                   <div className="text-green-100">Coverage</div>
+                   <div className="text-3xl font-bold text-blue-200">Global</div>
+                   <div className="text-blue-100">Coverage</div>
                  </div>
                </div>
              </div>
