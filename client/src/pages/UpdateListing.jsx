@@ -15,9 +15,17 @@ export default function UpdateListing() {
     address: '',
     type: 'rent',
     ownerType: 'individual',
+    ownerName: '',
+    ownerEmail: '',
+    ownerPhone: '',
     plotArea: '',
+    // Don't initialize sale-specific fields for rent listings
     pricePerSqft: '',
     totalPrice: '',
+    // Initialize rent-specific fields
+    monthlyRent: '',
+    deposit: '',
+    possessionDate: '',
     boundaryWall: false,
     latitude: null,
     longitude: null,
@@ -32,9 +40,9 @@ export default function UpdateListing() {
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
 
-  // Calculate total price whenever plot area or price per sqft changes
+  // Calculate total price whenever plot area or price per sqft changes (for sale)
   useEffect(() => {
-    if (formData.plotArea && formData.pricePerSqft) {
+    if (formData.type === 'sale' && formData.plotArea && formData.pricePerSqft) {
       const total = parseFloat(formData.plotArea) * parseFloat(formData.pricePerSqft);
       setFormData(prev => ({
         ...prev,
@@ -46,7 +54,7 @@ export default function UpdateListing() {
         totalPrice: ''
       }));
     }
-  }, [formData.plotArea, formData.pricePerSqft]);
+  }, [formData.plotArea, formData.pricePerSqft, formData.type]);
 
   // Initialize OpenStreetMap with Leaflet
   useEffect(() => {
@@ -74,42 +82,57 @@ export default function UpdateListing() {
 
     const createMap = () => {
       if (window.L && mapRef.current) {
-        const defaultLocation = [12.9716, 77.5946]; // Bangalore coordinates
-        
-        const map = window.L.map(mapRef.current).setView(defaultLocation, 12);
+        // Start with a world view
+        const map = window.L.map(mapRef.current).setView([20, 0], 2);
         
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        const marker = window.L.marker(defaultLocation, {
-          draggable: true,
-          title: 'Selected Location'
-        }).addTo(map);
+        // Store map reference
+        mapInstanceRef.current = map;
 
-        // Update coordinates when marker is dragged
-        marker.on('dragend', (event) => {
-          const position = event.target.getLatLng();
-          setFormData(prev => ({
-            ...prev,
-            latitude: position.lat,
-            longitude: position.lng,
-          }));
-        });
-
-        // Update coordinates when map is clicked
+        // Don't add a marker initially - let user place it or search for city
         map.on('click', (event) => {
           const position = event.latlng;
-          marker.setLatLng(position);
+          
+          // Remove existing marker if any
+          if (markerRef.current) {
+            map.removeLayer(markerRef.current);
+          }
+          
+          // Add new marker at clicked location
+          markerRef.current = window.L.marker(position, {
+            draggable: true,
+            title: 'Selected Location'
+          }).addTo(map);
+
+          // Update coordinates
           setFormData(prev => ({
             ...prev,
             latitude: position.lat,
             longitude: position.lng,
           }));
+
+          // Update coordinates when marker is dragged
+          markerRef.current.on('dragend', (event) => {
+            const newPosition = event.target.getLatLng();
+            setFormData(prev => ({
+              ...prev,
+              latitude: newPosition.lat,
+              longitude: newPosition.lng,
+            }));
+          });
         });
 
-        mapInstanceRef.current = map;
-        markerRef.current = marker;
+        // Add instructions
+        const instructions = window.L.control({ position: 'topright' });
+        instructions.onAdd = function() {
+          const div = window.L.DomUtil.create('div', 'info');
+          div.innerHTML = '<strong>Search for a city or click on the map to select location</strong>';
+          return div;
+        };
+        instructions.addTo(map);
       }
     };
 
@@ -124,50 +147,67 @@ export default function UpdateListing() {
     };
   }, []);
 
-  // Search for coordinates by address
+  // Search for city coordinates using OpenStreetMap Nominatim API
   const searchByAddress = async () => {
     if (!searchAddress.trim()) return;
-
+    
     setIsSearching(true);
-    setError('');
-
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&limit=1&addressdetails=1`
       );
-
-      if (!response.ok) {
-        throw new Error('Address search failed');
-      }
-
-      const data = await response.json();
-
-      if (data && data.length > 0) {
-        const result = data[0];
-        const newCoordinates = {
-          lat: parseFloat(result.lat),
-          lng: parseFloat(result.lon)
-        };
+      
+      if (response.ok) {
+        const data = await response.json();
         
-        setFormData(prev => ({
-          ...prev,
-          latitude: newCoordinates.lat,
-          longitude: newCoordinates.lng,
-        }));
-
-        // Update map and marker
-        if (mapInstanceRef.current && markerRef.current) {
-          mapInstanceRef.current.setView([newCoordinates.lat, newCoordinates.lng], 15);
-          markerRef.current.setLatLng([newCoordinates.lat, newCoordinates.lng]);
+        if (data && data.length > 0) {
+          const location = data[0];
+          const lat = parseFloat(location.lat);
+          const lon = parseFloat(location.lon);
+          
+          // Update form data with coordinates
+          setFormData(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lon,
+            address: location.display_name || searchAddress
+          }));
+          
+          // Center map on the found location
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.setView([lat, lon], 13);
+            
+            // Create or update marker
+            if (markerRef.current) {
+              markerRef.current.setLatLng([lat, lon]);
+            } else {
+              // Create new marker if none exists
+              markerRef.current = window.L.marker([lat, lon], {
+                draggable: true,
+                title: 'Selected Location'
+              }).addTo(mapInstanceRef.current);
+              
+              // Add drag event listener
+              markerRef.current.on('dragend', (event) => {
+                const newPosition = event.target.getLatLng();
+                setFormData(prev => ({
+                  ...prev,
+                  latitude: newPosition.lat,
+                  longitude: newPosition.lng,
+                }));
+              });
+            }
+          }
+          
+          // Clear search input
+          setSearchAddress('');
+        } else {
+          setError('City not found. Please try a different search term.');
         }
-        
-        setSearchAddress('');
-      } else {
-        setError('Address not found. Please try a different search term.');
       }
     } catch (error) {
-      console.error('Address search error:', error);
-      setError('Failed to search for address. Please select location manually on the map.');
+      console.error('Error searching for city:', error);
+      setError('Failed to search for city. Please try again.');
     } finally {
       setIsSearching(false);
     }
@@ -256,10 +296,27 @@ export default function UpdateListing() {
     const { id, type, value, checked } = e.target;
 
     if (id === 'sale' || id === 'rent') {
-      setFormData((prev) => ({ ...prev, type: id }));
+      // Clear conflicting fields when type changes
+      const newType = id;
+      setFormData(prev => {
+        const newData = { ...prev, type: newType };
+        
+        if (newType === 'rent') {
+          // Clear sale-specific fields
+          newData.pricePerSqft = '';
+          newData.totalPrice = '';
+        } else {
+          // Clear rent-specific fields
+          newData.monthlyRent = '';
+          newData.deposit = '';
+          newData.possessionDate = '';
+        }
+        
+        return newData;
+      });
     } else if (id === 'boundaryWall') {
-      setFormData((prev) => ({ ...prev, [id]: checked }));
-    } else if (['text', 'number', 'textarea', 'select'].includes(type)) {
+      setFormData({ ...formData, [id]: checked });
+    } else if (['text', 'number', 'textarea', 'select', 'email', 'tel', 'date'].includes(type)) {
       setFormData((prev) => ({ ...prev, [id]: value }));
     }
   };
@@ -275,19 +332,64 @@ export default function UpdateListing() {
       return setError('Please select a location on the map');
     }
 
-    if (!formData.plotArea || !formData.pricePerSqft) {
-      return setError('Please enter both plot area and price per sqft');
+    if (!formData.plotArea) {
+      return setError('Please enter plot area');
+    }
+
+    // Validate sale-specific fields
+    if (formData.type === 'sale') {
+      if (!formData.pricePerSqft) {
+        return setError('Please enter price per sqft for sale');
+      }
+    }
+
+    // Validate rent-specific fields
+    if (formData.type === 'rent') {
+      if (!formData.monthlyRent) {
+        return setError('Please enter monthly rent');
+      }
+      if (!formData.deposit) {
+        return setError('Please enter deposit amount');
+      }
+      if (!formData.possessionDate) {
+        return setError('Please select possession date');
+      }
+    }
+
+    // Validate owner contact details
+    if (formData.ownerType === 'individual') {
+      if (!formData.ownerName || !formData.ownerEmail || !formData.ownerPhone) {
+        return setError('Please fill in all owner contact details');
+      }
     }
 
     setLoading(true);
     setError(false);
 
     try {
+      // Clean the data based on listing type before sending
+      const cleanedData = {
+        ...formData,
+      };
+
+      // Remove sale-specific fields for rent listings
+      if (formData.type === 'rent') {
+        delete cleanedData.pricePerSqft;
+        delete cleanedData.totalPrice;
+      }
+
+      // Remove rent-specific fields for sale listings
+      if (formData.type === 'sale') {
+        delete cleanedData.monthlyRent;
+        delete cleanedData.deposit;
+        delete cleanedData.possessionDate;
+      }
+
       const res = await fetch(`/api/listing/update/${params.listingId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(cleanedData),
       });
 
       const data = await res.json();
@@ -420,15 +522,19 @@ export default function UpdateListing() {
           </div>
 
           {/* Boundary Wall */}
-          <div className='flex gap-2 items-center'>
-            <input
-              type='checkbox'
-              id='boundaryWall'
-              className='w-5'
-              onChange={handleChange}
-              checked={formData.boundaryWall}
-            />
-            <span>Boundary Wall</span>
+          <div className='flex flex-col gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50'>
+            <label className='font-medium text-gray-700'>Property Features:</label>
+            <div className='flex gap-2 items-center'>
+              <input
+                type='checkbox'
+                id='boundaryWall'
+                className='w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2'
+                onChange={handleChange}
+                checked={formData.boundaryWall}
+              />
+              <span className='text-gray-700'>Boundary Wall</span>
+            </div>
+            <p className='text-xs text-gray-500'>Check this if the property has a boundary wall or fencing</p>
           </div>
 
           {/* Map Integration */}
@@ -436,23 +542,49 @@ export default function UpdateListing() {
             <label className='font-medium'>Select Location:</label>
             
             {/* Address Search */}
-            <div className='flex gap-2 mb-2'>
-              <input
-                type='text'
-                value={searchAddress}
-                onChange={(e) => setSearchAddress(e.target.value)}
-                placeholder='Search by address, city, or landmark...'
-                className='flex-1 p-2 border border-gray-300 rounded-lg'
-                onKeyPress={(e) => e.key === 'Enter' && searchByAddress()}
-              />
-              <button
-                type='button'
-                onClick={searchByAddress}
-                disabled={isSearching || !searchAddress.trim()}
-                className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50'
-              >
-                {isSearching ? 'Searching...' : 'Search'}
-              </button>
+            <div className='flex flex-col gap-2 mb-4'>
+              <label className='font-medium text-gray-700'>Search for City/Location:</label>
+              <div className='flex gap-2'>
+                <input
+                  type='text'
+                  value={searchAddress}
+                  onChange={(e) => setSearchAddress(e.target.value)}
+                  placeholder='Enter city name (e.g., Mumbai, Delhi, Bangalore)...'
+                  className='flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  onKeyPress={(e) => e.key === 'Enter' && searchByAddress()}
+                />
+                <button
+                  type='button'
+                  onClick={searchByAddress}
+                  disabled={isSearching || !searchAddress.trim()}
+                  className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium'
+                >
+                  {isSearching ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+              <p className='text-sm text-gray-600'>
+                Search for a city to automatically center the map and set coordinates
+              </p>
+              
+              {/* Popular Cities Quick Selection */}
+              <div className='mt-2'>
+                <p className='text-xs text-gray-500 mb-2'>Popular cities:</p>
+                <div className='flex flex-wrap gap-2'>
+                  {['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'].map((city) => (
+                    <button
+                      key={city}
+                      type='button'
+                      onClick={() => {
+                        setSearchAddress(city);
+                        searchByAddress();
+                      }}
+                      className='px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full border border-gray-300 transition-colors'
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Map */}
@@ -469,6 +601,14 @@ export default function UpdateListing() {
             {formData.latitude && formData.longitude && (
               <div className='text-sm text-green-600 bg-green-50 p-2 rounded'>
                 Selected: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+              </div>
+            )}
+
+            {/* Coordinate validation warning */}
+            {formData.latitude && formData.longitude && (
+              <div className='text-sm text-orange-600 bg-orange-50 p-2 rounded border border-orange-200'>
+                <strong>⚠️ Important:</strong> Make sure you've selected the actual property location, not a default location. 
+                The transport score will only be accurate for real property coordinates.
               </div>
             )}
 

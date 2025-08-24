@@ -24,20 +24,49 @@ const listingSchema = new mongoose.Schema(
       required: true,
       enum: ['individual', 'company', 'government', 'trust'],
     },
+    // Owner contact details
+    ownerName: {
+      type: String,
+      required: true,
+    },
+    ownerEmail: {
+      type: String,
+      required: true,
+    },
+    ownerPhone: {
+      type: String,
+      required: true,
+    },
     plotArea: {
       type: Number,
       required: true,
       min: 1,
     },
+    // Sale-specific fields
     pricePerSqft: {
       type: Number,
-      required: true,
+      required: function() { return this.type === 'sale'; },
       min: 1,
     },
     totalPrice: {
       type: Number,
-      required: true,
+      required: function() { return this.type === 'sale'; },
       min: 1,
+    },
+    // Rent-specific fields
+    monthlyRent: {
+      type: Number,
+      required: function() { return this.type === 'rent'; },
+      min: 1,
+    },
+    deposit: {
+      type: Number,
+      required: function() { return this.type === 'rent'; },
+      min: 1,
+    },
+    possessionDate: {
+      type: Date,
+      required: function() { return this.type === 'rent'; },
     },
     boundaryWall: {
       type: Boolean,

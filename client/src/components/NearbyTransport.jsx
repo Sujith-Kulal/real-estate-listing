@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaTrain, FaBus, FaPlane, FaRoad, FaSubway, FaShip, FaStar } from 'react-icons/fa';
+import { FaTrain, FaBus, FaPlane, FaRoad, FaSubway, FaShip, FaStar, FaMapMarkerAlt } from 'react-icons/fa';
 
 export default function NearbyTransport({ latitude, longitude, radius = 300 }) {
   const [data, setData] = useState(null);
@@ -9,13 +9,40 @@ export default function NearbyTransport({ latitude, longitude, radius = 300 }) {
   useEffect(() => {
     const fetchNearby = async () => {
       if (!latitude || !longitude) return;
+      
+      // Check for default/placeholder coordinates
+      const defaultCoords = [
+        [0, 0],           // Null Island
+        [12.9716, 77.5946], // Bangalore (common default)
+        [40.7128, -74.0060], // New York (common default)
+        [51.5074, -0.1278],  // London (common default)
+        [35.6762, 139.6503], // Tokyo (common default)
+      ];
+
+      const isDefaultCoord = defaultCoords.some(([dlat, dlon]) => 
+        Math.abs(latitude - dlat) < 0.001 && Math.abs(longitude - dlon) < 0.001
+      );
+
+      if (isDefaultCoord) {
+        setError('Please select a valid location on the map');
+        setData(null);
+        return;
+      }
+
       setLoading(true);
       setError('');
       try {
         const res = await fetch(`/api/transport/nearby?lat=${latitude}&lon=${longitude}&radius=${radius}`);
         if (!res.ok) throw new Error('Failed to fetch nearby transport');
         const json = await res.json();
-        setData(json);
+        
+        // Check if the API returned a message indicating default coordinates
+        if (json.message) {
+          setError(json.message);
+          setData(null);
+        } else {
+          setData(json);
+        }
       } catch (e) {
         setError(e.message || 'Failed to load nearby transport');
       } finally {
@@ -25,13 +52,22 @@ export default function NearbyTransport({ latitude, longitude, radius = 300 }) {
     fetchNearby();
   }, [latitude, longitude, radius]);
 
-  if (!latitude || !longitude) return null;
+  if (!latitude || !longitude) {
+    return (
+      <div className='bg-white p-4 rounded-lg border border-gray-200'>
+        <div className='text-center text-gray-500'>
+          <FaMapMarkerAlt className='text-3xl mx-auto mb-2 text-gray-300' />
+          <p>Please select a location on the map to view transport information</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='bg-white p-4 rounded-lg border border-gray-200'>
       <div className='flex items-center justify-between mb-3'>
         <h3 className='text-lg font-semibold text-gray-800'>Nearby Transport (within {radius}m)</h3>
-        {data && (
+        {data && !data.message && (
           <div className='flex items-center gap-2 text-sm'>
             <FaStar className='text-yellow-500' />
             <span className='font-medium'>Transport Score:</span>
@@ -41,9 +77,14 @@ export default function NearbyTransport({ latitude, longitude, radius = 300 }) {
       </div>
 
       {loading && <p className='text-sm text-gray-600'>Loading nearby places…</p>}
-      {error && <p className='text-sm text-red-600'>{error}</p>}
+      {error && (
+        <div className='text-center text-red-600'>
+          <FaMapMarkerAlt className='text-2xl mx-auto mb-2' />
+          <p className='text-sm'>{error}</p>
+        </div>
+      )}
 
-      {data && (
+      {data && !data.message && (
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <Breakdown breakdown={data.scoreBreakdown} />
           <Category title='Airports' icon={<FaPlane className='text-blue-600' />} items={data.results.airports} />

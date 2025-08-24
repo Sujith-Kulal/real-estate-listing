@@ -5,15 +5,14 @@ import { sendEmail } from '../utils/sendEmail.js';
 
 export const createListing = async (req, res, next) => {
   try {
-    // Calculate total price based on plot area and price per sqft
-    const { plotArea, pricePerSqft } = req.body;
-    const totalPrice = plotArea * pricePerSqft;
+    const listingData = { ...req.body, userRef: req.user.id };
     
-    const listing = await Listing.create({ 
-      ...req.body, 
-      userRef: req.user.id,
-      totalPrice: totalPrice
-    });
+    // Only calculate totalPrice for sale listings
+    if (req.body.type === 'sale' && req.body.plotArea && req.body.pricePerSqft) {
+      listingData.totalPrice = req.body.plotArea * req.body.pricePerSqft;
+    }
+    
+    const listing = await Listing.create(listingData);
     return res.status(201).json(listing);
   } catch (error) {
     next(error);
@@ -49,13 +48,16 @@ export const updateListing = async (req, res, next) => {
   }
 
   try {
-    // Calculate total price based on plot area and price per sqft
-    const { plotArea, pricePerSqft } = req.body;
-    const totalPrice = plotArea * pricePerSqft;
+    const updateData = { ...req.body };
+    
+    // Only calculate totalPrice for sale listings
+    if (req.body.type === 'sale' && req.body.plotArea && req.body.pricePerSqft) {
+      updateData.totalPrice = req.body.plotArea * req.body.pricePerSqft;
+    }
     
     const updatedListing = await Listing.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, totalPrice: totalPrice },
+      updateData,
       { new: true }
     );
     res.status(200).json(updatedListing);

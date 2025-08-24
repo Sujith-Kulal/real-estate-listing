@@ -10,27 +10,58 @@ const updateExistingListings = async () => {
     await mongoose.connect(process.env.MONGO);
     console.log('Connected to MongoDB!');
 
-    // Find all listings that don't have pricePerSqft or totalPrice
-    const listingsToUpdate = await Listing.find({
-      $or: [
-        { pricePerSqft: { $exists: false } },
-        { totalPrice: { $exists: false } }
-      ]
-    });
+    // Find all listings that need updates
+    const listingsToUpdate = await Listing.find({});
 
     console.log(`Found ${listingsToUpdate.length} listings to update`);
 
     if (listingsToUpdate.length === 0) {
-      console.log('✅ All listings already have price information!');
+      console.log('✅ No listings found!');
       return;
     }
 
-    // Update each listing with default price values
+    // Update each listing with new fields
     let updatedCount = 0;
     let skippedCount = 0;
     
     for (const listing of listingsToUpdate) {
       try {
+        const updates = {};
+        
+        // Add owner contact details if missing
+        if (!listing.ownerName) {
+          updates.ownerName = 'Owner Name'; // Default placeholder
+          console.log(`📝 Adding owner name for "${listing.name}"`);
+        }
+        
+        if (!listing.ownerEmail) {
+          updates.ownerEmail = 'owner@example.com'; // Default placeholder
+          console.log(`📧 Adding owner email for "${listing.name}"`);
+        }
+        
+        if (!listing.ownerPhone) {
+          updates.ownerPhone = '0000000000'; // Default placeholder
+          console.log(`📞 Adding owner phone for "${listing.name}"`);
+        }
+
+        // Add rent-specific fields if missing and it's a rent listing
+        if (listing.type === 'rent') {
+          if (!listing.monthlyRent) {
+            updates.monthlyRent = 5000; // Default ₹5000 monthly rent
+            console.log(`💰 Setting monthly rent for "${listing.name}" to ₹5000`);
+          }
+          
+          if (!listing.deposit) {
+            updates.deposit = 10000; // Default ₹10000 deposit
+            console.log.log(`💳 Setting deposit for "${listing.name}" to ₹10000`);
+          }
+          
+          if (!listing.possessionDate) {
+            updates.possessionDate = new Date(); // Default to current date
+            console.log(`📅 Setting possession date for "${listing.name}" to current date`);
+          }
+        }
+
         // Check if plotArea is valid
         const plotArea = parseFloat(listing.plotArea);
         if (isNaN(plotArea) || plotArea <= 0) {
@@ -52,6 +83,7 @@ const updateExistingListings = async () => {
         
         // Update the listing
         await Listing.findByIdAndUpdate(listing._id, {
+          ...updates,
           pricePerSqft: defaultPricePerSqft,
           totalPrice: totalPrice
         });
@@ -63,22 +95,21 @@ const updateExistingListings = async () => {
         console.log(`   - Total Price: ₹${totalPrice.toLocaleString('en-IN')}`);
         
       } catch (error) {
-        console.error(`❌ Error updating listing ${listing._id}:`, error.message);
+        console.error(`❌ Error updating listing ${listing.name}:`, error.message);
         skippedCount++;
       }
     }
 
-    console.log(`\n🎉 Successfully updated ${updatedCount} out of ${listingsToUpdate.length} listings!`);
-    if (skippedCount > 0) {
-      console.log(`⚠️  Skipped ${skippedCount} listings due to invalid data`);
-    }
-    console.log('📝 Note: You may want to manually review and adjust the prices for accuracy.');
+    console.log('\n📊 Update Summary:');
+    console.log(`✅ Successfully updated: ${updatedCount} listings`);
+    console.log(`⚠️  Skipped: ${skippedCount} listings`);
+    console.log(`📝 Total processed: ${listingsToUpdate.length} listings`);
 
   } catch (error) {
-    console.error('Error updating listings:', error);
+    console.error('❌ Database connection error:', error.message);
   } finally {
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    console.log('🔌 Disconnected from MongoDB');
   }
 };
 

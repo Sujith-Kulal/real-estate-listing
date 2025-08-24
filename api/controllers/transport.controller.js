@@ -28,6 +28,70 @@ export const getNearbyTransport = async (req, res, next) => {
     return next(errorHandler(400, 'lat and lon query params are required'));
   }
 
+  // Validate coordinate ranges
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return next(errorHandler(400, 'Invalid coordinate values'));
+  }
+
+  // Check for default/placeholder coordinates that might give fake scores
+  const defaultCoords = [
+    [0, 0],           // Null Island
+    [12.9716, 77.5946], // Bangalore (common default)
+    [40.7128, -74.0060], // New York (common default)
+    [51.5074, -0.1278],  // London (common default)
+    [35.6762, 139.6503], // Tokyo (common default)
+    [0, 180],         // Edge cases
+    [90, 0],          // Edge cases
+    [-90, 0],         // Edge cases
+    [0, -180],        // Edge cases
+  ];
+
+  const isDefaultCoord = defaultCoords.some(([dlat, dlon]) => 
+    Math.abs(lat - dlat) < 0.001 && Math.abs(lon - dlon) < 0.001
+  );
+
+  // Additional validation for suspicious coordinates
+  const isSuspiciousCoord = (
+    (lat === 0 && lon === 0) || // Exactly at origin
+    (Math.abs(lat) < 0.001 && Math.abs(lon) < 0.001) || // Very close to origin
+    (Math.abs(lat - 12.9716) < 0.001 && Math.abs(lon - 77.5946) < 0.001) || // Bangalore
+    (Math.abs(lat - 40.7128) < 0.001 && Math.abs(lon + 74.0060) < 0.001) || // New York
+    (Math.abs(lat - 51.5074) < 0.001 && Math.abs(lon + 0.1278) < 0.001)    // London
+  );
+
+  if (isDefaultCoord || isSuspiciousCoord) {
+    return res.status(200).json({
+      center: { lat, lon },
+      radius: userRadius,
+      score: 0,
+      counts: {
+        airports: 0,
+        railwayStations: 0,
+        metroTram: 0,
+        busStops: 0,
+        majorHighways: 0,
+        ferryTerminals: 0,
+      },
+      scoreBreakdown: {
+        busStops: 0,
+        railway: 0,
+        airports: 0,
+        highways: 0,
+      },
+      results: {
+        airports: [],
+        railwayStations: [],
+        metroTram: [],
+        busStops: [],
+        majorHighways: [],
+        railLines: [],
+        ferryTerminals: [],
+        other: [],
+      },
+      message: 'Please select a valid location on the map. Default or placeholder coordinates are not allowed.'
+    });
+  }
+
   // Category-specific radii (meters) based on your scoring windows
   const RADII = {
     bus: Math.max(1000, userRadius), // ensure we cover up to 1km

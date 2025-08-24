@@ -155,36 +155,6 @@ export default function Listing() {
               {listing.address}
             </p>
             
-            <div className='flex gap-4'>
-              <p className='bg-red-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
-              </p>
-            </div>
-
-            {/* Price Information */}
-            <div className='bg-blue-50 p-4 rounded-lg border border-blue-200'>
-              <h3 className='text-lg font-semibold text-blue-800 mb-3 flex items-center gap-2'>
-                <FaRupeeSign className='text-blue-600' />
-                Price Details
-              </h3>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex items-center gap-2'>
-                  <FaRupeeSign className='text-green-600' />
-                  <span className='font-medium'>Price per sq ft:</span>
-                  <span className='text-lg font-semibold text-green-700'>
-                    ₹{listing.pricePerSqft?.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <div className='flex items-center gap-2'>
-                  <FaRupeeSign className='text-blue-600' />
-                  <span className='font-medium'>Total Price:</span>
-                  <span className='text-lg font-semibold text-blue-700'>
-                    ₹{listing.totalPrice?.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
             <p className='text-slate-800'>
               <span className='font-semibold text-black'>Description - </span>
               {listing.description}
@@ -213,8 +183,6 @@ export default function Listing() {
                     <span className='font-medium'>Listing Type:</span>
                     <span className='capitalize text-purple-700'>{listing.type}</span>
                   </div>
-                </div>
-                <div className='space-y-3'>
                   <div className='flex items-center gap-2'>
                     <FaShieldAlt className='text-lg text-orange-600' />
                     <span className='font-medium'>Boundary Wall:</span>
@@ -222,6 +190,8 @@ export default function Listing() {
                       {listing.boundaryWall ? 'Yes' : 'No'}
                     </span>
                   </div>
+                </div>
+                <div className='space-y-3'>
                   {listing.latitude && listing.longitude && (
                     <div className='flex items-center gap-2'>
                       <FaGlobe className='text-lg text-purple-600' />
@@ -239,6 +209,93 @@ export default function Listing() {
                 </div>
               </div>
             </div>
+
+            {/* Contact Details */}
+            {listing.ownerType === 'individual' && (
+              <div className='bg-blue-50 p-4 rounded-lg border border-blue-200'>
+                <h3 className='text-lg font-semibold text-blue-800 mb-3 flex items-center gap-2'>
+                  <FaUser className='text-blue-600' />
+                  Contact Details
+                </h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='space-y-3'>
+                    <div className='flex items-center gap-2'>
+                      <span className='font-medium'>Owner Name:</span>
+                      <span className='text-blue-700'>{listing.ownerName}</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span className='font-medium'>Email:</span>
+                      <span className='text-blue-700'>{listing.ownerEmail}</span>
+                    </div>
+                  </div>
+                  <div className='space-y-3'>
+                    <div className='flex items-center gap-2'>
+                      <span className='font-medium'>Phone:</span>
+                      <span className='text-blue-700'>{listing.ownerPhone}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Price/Rent Information */}
+            {listing.type === 'sale' ? (
+              <div className='bg-green-50 p-4 rounded-lg border border-green-200'>
+                <h3 className='text-lg font-semibold text-green-800 mb-3 flex items-center gap-2'>
+                  <FaRupeeSign className='text-green-600' />
+                  Sale Details
+                </h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='flex items-center gap-2'>
+                    <FaRupeeSign className='text-green-600' />
+                    <span className='font-medium'>Price per sq ft:</span>
+                    <span className='text-lg font-semibold text-green-700'>
+                      ₹{listing.pricePerSqft?.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <FaRupeeSign className='text-blue-600' />
+                    <span className='font-medium'>Total Price:</span>
+                    <span className='text-lg font-semibold text-blue-700'>
+                      ₹{listing.totalPrice?.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className='bg-orange-50 p-4 rounded-lg border border-orange-200'>
+                <h3 className='text-lg font-semibold text-orange-800 mb-3 flex items-center gap-2'>
+                  <FaRupeeSign className='text-orange-600' />
+                  Rent Details
+                </h3>
+                <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                  <div className='flex flex-col items-center text-center'>
+                    <span className='text-lg font-semibold text-orange-700'>
+                      ₹{listing.monthlyRent?.toLocaleString('en-IN')}
+                    </span>
+                    <span className='text-sm text-gray-600'>Monthly Rent</span>
+                  </div>
+                  <div className='flex flex-col items-center text-center'>
+                    <span className='text-lg font-semibold text-blue-700'>
+                      ₹{listing.deposit?.toLocaleString('en-IN')}
+                    </span>
+                    <span className='text-sm text-gray-600'>Deposit</span>
+                  </div>
+                  <div className='flex flex-col items-center text-center'>
+                    <span className='text-lg font-semibold text-green-700'>
+                      {listing.possessionDate ? new Date(listing.possessionDate).toLocaleDateString('en-IN') : 'N/A'}
+                    </span>
+                    <span className='text-sm text-gray-600'>Available From</span>
+                  </div>
+                  <div className='flex flex-col items-center text-center'>
+                    <span className={`text-lg font-semibold ${listing.boundaryWall ? 'text-green-700' : 'text-red-700'}`}>
+                      {listing.boundaryWall ? 'Yes' : 'No'}
+                    </span>
+                    <span className='text-sm text-gray-600'>Boundary Wall</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Nearby Transport */}
             <div className='bg-white p-4 rounded-lg border'>
