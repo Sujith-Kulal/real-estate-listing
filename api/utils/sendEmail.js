@@ -1,4 +1,9 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+// Ensure environment variables are loaded BEFORE creating the transporter.
+// Without this, Nodemailer may default to localhost:587 (127.0.0.1) if SMTP_HOST is undefined.
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
 	host: process.env.SMTP_HOST,
