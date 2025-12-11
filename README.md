@@ -193,7 +193,7 @@ Improves transparency and eliminates third-party involvement.
 
 # 6. System Architecture
 
-(Insert architecture diagram from your image.)
+<img width="1039" height="1181" alt="image" src="https://github.com/user-attachments/assets/1777e2db-d433-4688-8917-de7c1188506d" />
 
 ---
 
@@ -244,7 +244,6 @@ The BHUMI Real Estate Listing System mini project was successfully designed and 
 Overall, BHUMI meets its goal of delivering a structured, scalable, and user-friendly system. It forms a strong foundation for real-world expansion with potential enhancements such as secure payments, advanced GIS mapping, transport integration, and predictive analytics.
 
 ---
-<img width="1039" height="1181" alt="image" src="https://github.com/user-attachments/assets/1777e2db-d433-4688-8917-de7c1188506d" />
 
 
-Just tell me.
+
